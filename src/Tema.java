@@ -58,9 +58,6 @@ public class Tema {
                 else if (newCommandsSplit[0].equals("calculatetotal")){
                     String[] aux = new String[newCommandsSplit.length - 1];
                     System.arraycopy(newCommandsSplit, 1, aux, 0, newCommandsSplit.length - 1);
-                    for(String xi : aux){
-                        System.out.println(xi);
-                    }
                     st.calculateTotal(aux);
                 }
                 else if(newCommandsSplit[0].equals("loadcsv")){
