@@ -5,7 +5,11 @@ import java.util.Arrays;
 public class Tema {
     public static void main(String[] args) throws IOException, CurrencyNotFoundException {
         Store st = Store.getInstance();
-        if(true){
+        st.readCSV("Book1.csv");
+        st.showStore();
+        st.setStoreCurrency("USD");
+        System.out.println(st.getStoreCurrency());
+        if(false){
             while(true){
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 String newCommand = br.readLine();
@@ -53,7 +57,14 @@ public class Tema {
 
                 }
                 else if(newCommandsSplit[0].equals("applydiscount")){
-                    st.applyDiscount(newCommandsSplit[1], Double.parseDouble(newCommandsSplit[2]));
+                    try {
+                        st.applyDiscount(new Discount(DiscountType.valueOf(newCommandsSplit[1] + "_DISCOUNT"), Double.parseDouble(newCommandsSplit[2])));
+                    }
+                    catch (DiscountNotFoundException  exception){
+                        exception.printMessage();
+                    } catch (NegativePriceException exception) {
+                        exception.printMessage();
+                    }
                 }
                 else if (newCommandsSplit[0].equals("calculatetotal")){
                     String[] aux = new String[newCommandsSplit.length - 1];

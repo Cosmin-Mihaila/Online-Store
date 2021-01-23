@@ -4,7 +4,6 @@ import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
 
-
 import java.io.*;
 import java.util.List;
 
@@ -17,7 +16,7 @@ public class Store {
     private Discount[] discounts;
     private static Store instance;
 
-    public String getStoreCurrencySymbol(){
+    public String getStoreCurrencySymbol() {
         return currency.getSymbol();
     }
 
@@ -28,7 +27,6 @@ public class Store {
     public static Store getInstance() {
         if (instance == null) {
             instance = new Store();
-
             instance.currency = instance.createCurrency("EUR", "€", 1.0);
 
         }
@@ -49,7 +47,12 @@ public class Store {
 
                 /** Creem noul producator si il adaugam la vectorul de producatori*/
                 Manufacturer newManufacturer = new Manufacturer(x[2]);
-                addManufacturer(newManufacturer);
+
+                try {
+                    addManufacturer(newManufacturer);
+                } catch (DuplicateManufacturerException exception) {
+                    exception.printMessage();
+                }
 
                 int quantity = 0;
                 if (x[4].length() != 0) {
@@ -63,20 +66,23 @@ public class Store {
                         .withPrice(stringToPrice(x[3]))
                         .withQuantity(quantity)
                         .build();
-
-                addProduct(newProduct);
+                try {
+                    addProduct(newProduct);
+                } catch (DuplicateProductException exception) {
+                    exception.printMessage();
+                }
 
             }
 
-        } catch (IOException | CsvException | DuplicateProductException | DuplicateManufacturerException e) {
+        } catch (IOException | CsvException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void writeCSV(String fileName){
+    public void writeCSV(String fileName) {
         File file = new File(fileName);
-        try{
+        try {
             // create FileWriter object with file as parameter
             FileWriter outputfile = new FileWriter(file);
 
@@ -85,66 +91,57 @@ public class Store {
                     CSVWriter.NO_QUOTE_CHARACTER,
                     CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                     CSVWriter.DEFAULT_LINE_END);
-            String[] headLine = {"uniq_id","product_name","manufacturer","price","number_available_in_stock"};
+            String[] headLine = {"uniq_id", "product_name", "manufacturer", "price", "number_available_in_stock"};
             writer.writeNext(headLine);
 
-            for(Product x : products){
+            for (Product x : products) {
                 writer.writeNext(x.toSave());
             }
 
             writer.close();
-        }
-        catch (IOException e) {
-            // TODO Auto-generated catch block
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void addProduct(Product product) throws DuplicateProductException {
-        try {
-            if (products == null) {
-                products = new Product[1];
-                products[0] = product;
+        if (products == null) {
+            products = new Product[1];
+            products[0] = product;
 
-            } else {
+        } else {
 
-                for (Product x : products) {
-                    if (x.getUniqueId().equals(product.getUniqueId())) {
-                        throw new DuplicateProductException();
-                    }
+            for (Product x : products) {
+                if (x.getUniqueId().equals(product.getUniqueId())) {
+                    throw new DuplicateProductException();
                 }
-                Product[] aux = new Product[products.length + 1];
-                System.arraycopy(products, 0, aux, 0, products.length);
-                aux[products.length] = product;
-                products = aux;
             }
-
-        } catch (DuplicateProductException exception) {
-            exception.printMessage();
+            Product[] aux = new Product[products.length + 1];
+            System.arraycopy(products, 0, aux, 0, products.length);
+            aux[products.length] = product;
+            products = aux;
         }
+
 
     }
 
     public void addManufacturer(Manufacturer manufacturer) throws DuplicateManufacturerException {
-        try {
-            if (manufacturers == null) {
-                manufacturers = new Manufacturer[1];
-                manufacturers[0] = manufacturer;
+        if (manufacturers == null) {
+            manufacturers = new Manufacturer[1];
+            manufacturers[0] = manufacturer;
 
-            } else {
-                for (Manufacturer x : manufacturers) {
-                    if (x.getName().equals(manufacturer.getName())) {
-                        throw new DuplicateManufacturerException();
-                    }
+        } else {
+            for (Manufacturer x : manufacturers) {
+                if (x.getName().equals(manufacturer.getName())) {
+                    throw new DuplicateManufacturerException();
                 }
-                Manufacturer[] aux = new Manufacturer[manufacturers.length + 1];
-                System.arraycopy(manufacturers, 0, aux, 0, manufacturers.length);
-                aux[manufacturers.length] = manufacturer;
-                manufacturers = aux;
             }
-        } catch (DuplicateManufacturerException exception) {
-            exception.printMessage();
+            Manufacturer[] aux = new Manufacturer[manufacturers.length + 1];
+            System.arraycopy(manufacturers, 0, aux, 0, manufacturers.length);
+            aux[manufacturers.length] = manufacturer;
+            manufacturers = aux;
         }
+
     }
 
     public void showStore() {
@@ -242,16 +239,14 @@ public class Store {
     }
 
     public void setStoreCurrency(String name) {
-        for (Currency x : getInstance().currencyList) {
-            if (x.getName().equals(name)) {
-                try {
-                    getInstance().changeCurrency(x);
-                } catch (CurrencyNotFoundException exception) {
-                    exception.printStackTrace();
-                }
-            }
+        Currency setCurrency = new Currency(name);
+        try {
+            getInstance().changeCurrency(setCurrency);
+        } catch (CurrencyNotFoundException exception) {
+            exception.printMessage();
         }
     }
+
 
     public void updateParity(String name, double parityToEUR) {
         for (Currency x : getInstance().currencyList) {
@@ -288,7 +283,7 @@ public class Store {
     }
 
     public void listDiscounts() {
-        if(getInstance().discounts == null){
+        if (getInstance().discounts == null) {
             return;
         }
         for (Discount x : getInstance().discounts) {
@@ -296,16 +291,28 @@ public class Store {
         }
     }
 
-    public void applyDiscount(String name, double value) {
-        if (name.equals("PERCENTAGE")) {
-            for (Product x : getInstance().products) {
-                x.setPrice(x.getPrice() * (100.0 - value) / 100.0);
-            }
-        } else if (name.equals("FIXED")) {
-            for (Product x : getInstance().products) {
-                x.setPrice(x.getPrice() - value);
+
+    public void applyDiscount(Discount discount) throws NegativePriceException, DiscountNotFoundException {
+        for (Discount x : discounts) {
+            if(x.getDiscountType().equals(discount.getDiscountType()) && x.getValue() == discount.getValue()){
+                if(discount.getDiscountType() == DiscountType.PERCENTAGE_DISCOUNT){
+                    for (Product y : getInstance().products) {
+                        y.setPrice(y.getPrice() * (100.0 - x.getValue()) / 100.0);
+                    }
+                }
+                else if (discount.getDiscountType() == DiscountType.FIXED_DISCOUNT){
+                    for (Product y : getInstance().products) {
+                        if (y.getPrice() - x.getValue() > 0) {
+                            y.setPrice(y.getPrice() - x.getValue());
+                        } else {
+                            throw new NegativePriceException();
+                        }
+                    }
+                }
             }
         }
+
+        throw new DiscountNotFoundException();
     }
 
     public void calculateTotal(String[] products) {

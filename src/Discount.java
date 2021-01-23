@@ -6,6 +6,19 @@ public class Discount {
     private double value;
     private LocalDateTime lastDateApplied;
 
+    public DiscountType getDiscountType() {
+        return discountType;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public Discount(DiscountType discountType, double value){
+        this.discountType = discountType;
+        this.value = value;
+    }
+
     public Discount(String name, DiscountType discountType, double value) {
         this.name = name;
         this.discountType = discountType;
