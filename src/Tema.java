@@ -5,9 +5,7 @@ import java.util.Arrays;
 public class Tema {
     public static void main(String[] args) throws IOException, CurrencyNotFoundException, ClassNotFoundException {
         Store st = Store.getInstance();
-        st.readCSV("Book1.csv");
-        st.showStore();
-        if(false){
+        if(true){
             while(true){
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 String newCommand = br.readLine();
@@ -15,6 +13,9 @@ public class Tema {
                 System.out.println(newCommand);
                 if(newCommandsSplit[0].equals("quit") || newCommandsSplit[0].equals("exit")){
                     break;
+                }
+                else if(newCommandsSplit[0].equals("count")){
+                    System.out.println(st.countProducts);
                 }
                 else if (newCommandsSplit[0].equals("listcurrencies")){
                     st.listCurrencies();
@@ -79,7 +80,7 @@ public class Tema {
                     st.saveStore(newCommandsSplit[1]);
                 }
                 else if(newCommandsSplit[0].equals("loadstore")){
-                    st.loadStore(newCommandsSplit[1]);
+                    st = st.loadStore(newCommandsSplit[1]);
                 }
             }
         }

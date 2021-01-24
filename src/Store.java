@@ -14,7 +14,8 @@ public class Store implements Serializable {
     private Product[] products;
     private Manufacturer[] manufacturers;
     private Discount[] discounts;
-    private static Store instance = null;
+    private static Store instance;
+    public int countProducts = 0;
 
     public String getStoreCurrencySymbol() {
         return currency.getSymbol();
@@ -78,6 +79,7 @@ public class Store implements Serializable {
                         .withQuantity(quantity)
                         .build();
                 try {
+                    getInstance().countProducts++;
                     addProduct(newProduct);
                 } catch (DuplicateProductException exception) {
                     exception.printMessage();
@@ -85,7 +87,7 @@ public class Store implements Serializable {
 
             }
 
-        } catch (IOException | CsvException e) {
+        } catch (IOException | CsvException | CurrencyNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -102,11 +104,7 @@ public class Store implements Serializable {
             FileWriter outputfile = new FileWriter(file);
 
             /* Creem obiectul CSVWriter*/
-            CSVWriter writer = new CSVWriter(outputfile, ',',
-                    CSVWriter.NO_QUOTE_CHARACTER,
-                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                    CSVWriter.DEFAULT_LINE_END);
-
+            CSVWriter writer = new CSVWriter(outputfile);
             /* Declaram si scriem prima linie, ce reprezinta numele coloanelor*/
             String[] headLine = {"uniq_id", "product_name", "manufacturer", "price", "number_available_in_stock"};
             writer.writeNext(headLine);
@@ -318,9 +316,10 @@ public class Store implements Serializable {
      * @param price String-ul ce include pretul si currency-ul
      * @return Pretul in currency-ul de pe store
      */
-    public static double stringToPrice(String price) {
+    public static double stringToPrice(String price) throws CurrencyNotFoundException {
         String symbol = Character.toString(price.charAt(0));
         String priceString = price.substring(1);
+        priceString = priceString.replace(",", "");
         double priceDouble = Double.parseDouble(priceString);
 
         /* Verificam daca currency-ul preturului este diferit de cel de pe store*/
@@ -328,16 +327,21 @@ public class Store implements Serializable {
 
             /* Cautam currency-ul in lista de currency-uri de pe store*/
             for (Currency x : getInstance().currencyList) {
-
                 /* Modificam pretul primit in functie de paritatea currency-ului la EUR*/
                 if (x.getSymbol().equals(symbol)) {
                     priceDouble = priceDouble * x.getParityToEur();
                     priceDouble = priceDouble / getInstance().currency.getParityToEur();
+
+                    return priceDouble;
                 }
             }
         }
+        else{
+            return priceDouble;
+        }
 
-        return priceDouble;
+        /* In cazul in care nu exista currency-ul primit pe store*/
+        throw new CurrencyNotFoundException();
     }
 
     /**
@@ -481,10 +485,10 @@ public class Store implements Serializable {
         System.out.println(getInstance().currency.getSymbol() + total);
     }
 
-    public void loadStore(String fileName) throws IOException, ClassNotFoundException {
+    public Store loadStore(String fileName) throws IOException, ClassNotFoundException {
         FileInputStream fileIn = new FileInputStream(fileName);
         ObjectInputStream in = new ObjectInputStream(fileIn);
-        instance = (Store) in.readObject();
+        return (Store) in.readObject();
     }
 
     public void saveStore(String fileName) throws IOException {
