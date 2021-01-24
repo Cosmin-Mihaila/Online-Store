@@ -3,12 +3,10 @@ import java.io.*;
 import java.util.Arrays;
 
 public class Tema {
-    public static void main(String[] args) throws IOException, CurrencyNotFoundException {
+    public static void main(String[] args) throws IOException, CurrencyNotFoundException, ClassNotFoundException {
         Store st = Store.getInstance();
         st.readCSV("Book1.csv");
         st.showStore();
-        st.setStoreCurrency("USD");
-        System.out.println(st.getStoreCurrency());
         if(false){
             while(true){
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -76,6 +74,12 @@ public class Tema {
                 }
                 else if(newCommandsSplit[0].equals("savecsv")){
                     st.writeCSV(newCommandsSplit[1]);
+                }
+                else if(newCommandsSplit[0].equals("savestore")){
+                    st.saveStore(newCommandsSplit[1]);
+                }
+                else if(newCommandsSplit[0].equals("loadstore")){
+                    st.loadStore(newCommandsSplit[1]);
                 }
             }
         }

@@ -23,7 +23,7 @@ public class Discount {
         this.name = name;
         this.discountType = discountType;
         this.value = value;
-        lastDateApplied = LocalDateTime.now();
+        this.lastDateApplied = LocalDateTime.now();
     }
 
     @Override
@@ -34,6 +34,13 @@ public class Discount {
                 ", value=" + value +
                 ", lastDateApplied=" + lastDateApplied +
                 '}';
+    }
+
+    /**
+     * Metoda ce seteaza ultima aplicare ca fiind data si ora actuala
+     */
+    public void setAsAppliedNow(){
+        this.lastDateApplied = LocalDateTime.now();
     }
 
 }

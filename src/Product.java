@@ -1,4 +1,6 @@
-public class Product {
+import java.io.Serializable;
+
+public class Product implements Serializable {
     private String uniqueId;
     private String name;
     private Manufacturer manufacturer;
@@ -67,6 +69,11 @@ public class Product {
                 '}';
     }
 
+    /**
+     * Metoda pentru a returna detaliile produsului intr-un String[] pentru a putea fi
+     * scris in fisierul CSV
+     * @return Vectorul de String ce reprezinta detaliile produslui
+     */
     public String[] toSave(){
         String[] aux = new String[5];
         aux[0] = uniqueId;
