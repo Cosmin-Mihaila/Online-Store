@@ -275,6 +275,7 @@ public class Store implements Serializable {
      * @param currency Currency-ul dupa care se updateaza preturile
      */
     public void updatePrices(Currency currency) {
+        if(getInstance().products == null) return;
         for (Product x : getInstance().products) {
             x.setPrice(x.getPrice() * getInstance().currency.getParityToEur());
             x.setPrice(x.getPrice() / currency.getParityToEur());

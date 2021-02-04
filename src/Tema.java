@@ -1,16 +1,17 @@
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class Tema {
     public static void main(String[] args) throws IOException, CurrencyNotFoundException, ClassNotFoundException {
         Store st = Store.getInstance();
         if(true){
+            File myObj = new File("fileName");
+            Scanner myReader = new Scanner(myObj);
             while(true){
-                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                String newCommand = br.readLine();
+                String newCommand = myReader.nextLine();
                 String[] newCommandsSplit = newCommand.split(" ", 6);
-                System.out.println(newCommand);
                 if(newCommandsSplit[0].equals("quit") || newCommandsSplit[0].equals("exit")){
                     break;
                 }
